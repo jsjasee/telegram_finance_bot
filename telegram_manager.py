@@ -83,14 +83,18 @@ class BotManager:
         self.user_messages[chat_id] = []
 
         # ⭐(Q6.1) Show loading while we query Notion
-        loading = self.bot.send_message(chat_id, "🔎 Gathering transactions, please wait…")
+        loading = self.bot.send_message(chat_id, "🔎 Gathering transactions, please wait…") # 🔴 if no transactions it seems to time out, fix this error.
         self.user_messages[chat_id].append(loading.message_id) # add this loading message to the user_messages
 
         # ⭐(Q6.2) Use the NotionManager method that RETURNS data.
         # If you hadn't added it, you'd get AttributeError (meaning the method doesn't exist).
         try:
+            # print('🔴 checkpoint reached')
             records, _index = notion_bot.read_rows(limit=50)
+            print(records)
+            print(_index)
         except ValueError:
+            print('error here')
             self.bot.edit_message_text("✅ Nothing to categorise. ValueError encountered", chat_id, loading.message_id)
         else:
             if not records:

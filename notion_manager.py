@@ -146,11 +146,7 @@ class NotionManager:
     def read_rows(self, limit=20):
         """
         Prints up to 'limit' rows.
-        - Tries to use 'Name' as the title; if not found, uses the first title-type property.
-        - Also prints a few likely finance fields if they exist: Amount, Date, Merchant, Category.
-        Customize the 'fields_to_show' list to your schema after viewing the schema printout.
         """
-        fields_to_show = ["Amount", "Date"]
 
         seen = 0
         empty_page_records = []
@@ -162,6 +158,10 @@ class NotionManager:
             page_size = min(self.page_size, limit - seen)  # don’t fetch more than we need -> we will never exceed the PAGE_SIZE limit which is 50
             data = self.query_rows(page_size=page_size, start_cursor=cursor, filter_=self.filter,
                               sorts=self.sort_query)
+            if not data["results"]:
+                # there's no empty records
+                return empty_page_records, index_of_empty_records
+
             for page in data["results"]:
                 # print("empty page found")
                 # print(page)
@@ -171,9 +171,11 @@ class NotionManager:
 
                 seen += 1
                 if seen >= limit:
-                    return  # stop once we hit the requested limit
+                    print('limit reached')
+                    return  empty_page_records, index_of_empty_records # stop once we hit the requested limit
                 elif seen >= len(data["results"]):
                     # we don't have any more empty rows
+                    print('all records have been read')
                     return empty_page_records, index_of_empty_records
 
             # Handle pagination: if there are more rows, continue from next_cursor
