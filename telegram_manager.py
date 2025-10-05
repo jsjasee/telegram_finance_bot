@@ -160,6 +160,7 @@ class BotManager:
                 # fallback: just confirm
                 self.bot.send_message(c.message.chat.id, "✅ Categorised.")
         except Exception as e:
+            print(c.message.chat.id)
             self.bot.answer_callback_query(c.id, "Update failed ❌", show_alert=False)
-            self.bot.send_message(c.message.chat.id, f"❌ Failed: <code>{html.escape(str(e))}</code>") # the notion page could have been deleted, that's why error.
-            self.user_messages[c.message.chat.id].append(c.message.message_id) # clean up the error messages if needed
+            error_message = self.bot.send_message(c.message.chat.id, f"❌ Failed: <code>{html.escape(str(e))}</code>") # the notion page could have been deleted, that's why error.
+            self.user_messages[c.message.chat.id].append(error_message.message_id)  # clean up the error messages if needed
