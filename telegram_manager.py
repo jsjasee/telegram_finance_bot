@@ -49,11 +49,17 @@ class BotManager:
                 continue
             callback_key = self._store_cb(transaction_page_id, exp_id)
             buttons.append(InlineKeyboardButton(text=name, callback_data=f"SET:{callback_key}"))
+
         if not buttons:
             # if we have no categories set in our notion database, then no buttons will be appending cos there's the dictionary
             # notion_bot.expense_type_ids is empty... so we set it to disabled (then later in the callback, in 'handle_settype function' if we check that it is disabled, we don't do anything)
             buttons.append(InlineKeyboardButton(text="No categories configured", callback_data="SET:disabled"))
+
         keyboard.add(*buttons)
+
+        # add delete button
+        del_key = self._store_cb(transaction_page_id, "DELETE")
+        keyboard.add(InlineKeyboardButton(text="🗑 Delete", callback_data=f"SET:{del_key}"))
         return keyboard
 
     def _format_record(self, rec: dict) -> str:
@@ -141,6 +147,27 @@ class BotManager:
             self.bot.answer_callback_query(c.id, "Invalid/expired button.", show_alert=False)
             # call answer_callback_query on every button press, usually with show_alert=False, and then do your real UI updates by editing/deleting/sending messages.
 
+            return
+
+        # 🔴 Delete branch
+        if exp_type_id == "DELETE":
+            try:
+                notion_bot.delete_expense(transaction_id)
+                self.bot.answer_callback_query(c.id, "Deleted. ⛔️", show_alert=False)
+                try:
+                    # remove keyboard, then annotate
+                    self.bot.edit_message_reply_markup(c.message.chat.id, c.message.message_id, reply_markup=None)
+                except Exception as e:
+                    print(f"🔴 error encountered when editing message {e}")
+                try:
+                    self.bot.edit_message_text(c.message.text + "\n\n☑️ Deleted.", c.message.chat.id,
+                                               c.message.message_id)
+                except Exception:
+                    self.bot.send_message(c.message.chat.id, "☑️ Deleted.")
+            except Exception as e:
+                self.bot.answer_callback_query(c.id, "Delete failed ❌", show_alert=False)
+                err = self.bot.send_message(c.message.chat.id, f"❌ Failed: <code>{html.escape(str(e))}</code>")
+                self.user_messages[c.message.chat.id].append(err.message_id) # basically adding the error message id to the list of messages sent so that we can delete it later
             return
 
         # Update Notion

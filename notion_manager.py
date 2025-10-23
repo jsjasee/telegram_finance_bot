@@ -241,3 +241,21 @@ class NotionManager:
         r.raise_for_status()
         return True
         # return r.json()  # return updated page (or ignore and just return True)
+
+    def delete_expense(self, txn_page_id: str):
+        """
+        Delete ONE row (page) to point of an Expense using the `expense_type_page_id`.
+        Archived means this expense page is placed in the bin, not permanently deleted, as this feature is not yet
+        supported by notion api.
+        """
+        self.session = requests.Session()
+
+        url = f"https://api.notion.com/v1/pages/{txn_page_id}"
+        body = {
+            "archived": True, # ← must be top-level, not under "properties"
+        }
+        r = self.session.patch(url, headers=self.headers, json=body, timeout=30)
+        r.raise_for_status()
+        print("expense page deleted.")
+        return True
+        # return r.json()  # return updated page (or ignore and just return True)
