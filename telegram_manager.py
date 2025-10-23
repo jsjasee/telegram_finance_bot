@@ -57,7 +57,7 @@ class BotManager:
 
         keyboard.add(*buttons)
 
-        # add delete button
+        # add delete button (instead of adding it together with the buttons, we add it as a separate entity so that the delete button appears on the next row, as a standalone button)
         del_key = self._store_cb(transaction_page_id, "DELETE")
         keyboard.add(InlineKeyboardButton(text="🗑 Delete", callback_data=f"SET:{del_key}"))
         return keyboard
