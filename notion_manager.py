@@ -239,6 +239,7 @@ class NotionManager:
         }
         r = self.session.patch(url, headers=self.headers, json=body, timeout=30)
         r.raise_for_status()
+        # print(r.json())
         return True
         # return r.json()  # return updated page (or ignore and just return True)
 

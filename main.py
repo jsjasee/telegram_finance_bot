@@ -15,7 +15,10 @@ app = Flask(__name__)
 
 # set webhook
 bot.remove_webhook()
-bot.set_webhook(url=WEBHOOK_URL)
+bot.set_webhook(
+    url=WEBHOOK_URL,
+    allowed_updates=["message", "callback_query"],
+)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -26,7 +29,12 @@ def webhook():
     if not request.is_json:
         return "invalid", 403
     update = types.Update.de_json(request.get_json())  # dict → Update
+    if getattr(update, "callback_query", None):
+        print("Webhook received callback_query")
+    elif getattr(update, "message", None):
+        print("Webhook received message")
     bot.process_new_updates([update])
+    # REMOVE THE FOLLOWING PRINT STATEMENT TO REMOVE THE UPDATE JSON printed.
     print(update)
     return "", 200
 

@@ -124,6 +124,7 @@ class BotManager:
     # ── Callback handler (button tap) ──
     def handle_set_type(self, c: types.CallbackQuery):
         # c is a CallbackQuery (⭐ explained): c.data is our short key; c.message is the original Message with the keyboard
+        print(f"handle_set_type reached with data={getattr(c, 'data', None)}")
         if not (c.data and c.data.startswith("SET:")):
             self.bot.answer_callback_query(c.id, "Ignoring.", show_alert=False)
             return
@@ -151,6 +152,7 @@ class BotManager:
 
         # 🔴 Delete branch
         if exp_type_id == "DELETE":
+            print("Deleted block reached.")
             try:
                 notion_bot.delete_expense(transaction_id)
                 self.bot.answer_callback_query(c.id, "Deleted. ⛔️", show_alert=False)
@@ -172,6 +174,7 @@ class BotManager:
 
         # Update Notion
         try:
+            print("Updating notion block reached.")
             notion_bot.set_expense_type(transaction_id, exp_type_id)
             self.bot.answer_callback_query(c.id, "Updated ✅", show_alert=False)
 
